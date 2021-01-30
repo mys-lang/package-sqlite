@@ -1,5 +1,5 @@
 [package]
-name = "sqlite-basics"
+name = "sqlite_basics"
 version = "0.1.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 

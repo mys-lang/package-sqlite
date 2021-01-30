@@ -1,24 +1,23 @@
-from argparse import Parser
 from sqlite import Database
 from sqlite import Statement
 from sqlite import Type
 
 DATABASE_FILENAME: string = "the.db"
 
-def print_column_value(statement: Statement, column: i32):
+def print_column_value(statement: Statement, column: u32):
     print("  ", end="")
 
     column_type = statement.column_type(column)
 
-    if column_type == Type.INTEGER:
+    if column_type == Type.Integer:
         print(statement.column_int(column))
-    elif column_type == Type.FLOAT:
+    elif column_type == Type.Float:
         print(statement.column_float(column))
-    elif column_type == Type.STRING:
+    elif column_type == Type.String:
         print(statement.column_string(column))
-    elif column_type == Type.NULL:
+    elif column_type == Type.Null:
         print("null")
-    elif column_type == Type.BLOB:
+    elif column_type == Type.Blob:
         print("blob")
 
 def create():
@@ -64,13 +63,13 @@ def select():
         print(f"Row {row}:")
 
         for column in range(3):
-            print_column_value(statement, column)
+            print_column_value(statement, u32(column))
 
         row += 1
 
 def remove():
-    os.remove(DATABASE_FILENAME)
-    print(f"Database {DATABASE_FILENAME} destroyed.")
+    # os.remove(DATABASE_FILENAME)
+    print(f"ToDo: Database {DATABASE_FILENAME} destroyed.")
 
 def main(argv: [string]):
     create()

@@ -1,4 +1,4 @@
-"""mys-embedded-c++-before-namespace
+"""mys-embedded-c++-header-before-namespace
 #include <sqlite3.h>
 """
 
@@ -25,7 +25,7 @@ class Database:
     def __init__(self, path: string):
         pass
 
-    def __destroy__(self):
+    def __del__(self):
         pass
 
     def execute(self, sql: string):
@@ -51,35 +51,35 @@ class Statement:
     def __init__(self, sql: string, database: Database):
         self.database = database
         self._number_of_columns = 0
-        res = 0
+        res = _Result.Ok
 
         c"res = sqlite3_prepare(sql, &this->stmt_p);"
 
-        if res != _Result.OK:
-            raise SqlError()
+        if res != _Result.Ok:
+            raise SqlError("")
 
     def __del__(self):
         c"sqlite3_finalize(this->stmt_p);"
 
     def bind_int(self, column: u32, value: i64):
-        res = 0
+        res = _Result.Ok
 
         c"res = sqlite3_bind_int64(this->stmt_p, column, value);"
 
-        if res != _Result.OK:
-            raise SqlError()
+        if res != _Result.Ok:
+            raise SqlError("")
 
     def bind_float(self, column: u32, value: f64):
-        res = 0
+        res = _Result.Ok
 
         c"res = sqlite3_bind_double(this->stmt_p, column, value);"
 
-        if res != _Result.OK:
-            raise SqlError()
+        if res != _Result.Ok:
+            raise SqlError("")
 
     def bind_string(self, column: u32, value: string):
         value_utf8 = value.to_utf8()
-        res = 0
+        res = _Result.Ok
 
         c"""
         res = sqlite3_bind_text(this->stmt_p,
@@ -88,16 +88,16 @@ class Statement:
                                 SQLITE_TRANSIENT);
         """
 
-        if res != _Result.OK:
-            raise SqlError()
+        if res != _Result.Ok:
+            raise SqlError("")
 
     def bind_null(self, column: u32):
-        res = 0
+        res = _Result.Ok
 
         c"res = sqlite3_bind_null(this->stmt_p, column);"
 
-        if res != _Result.OK:
-            raise SqlError()
+        if res != _Result.Ok:
+            raise SqlError("")
 
     def execute(self):
         """Execute the statement.
@@ -107,8 +107,8 @@ class Statement:
         result = self._step()
         self._reset()
 
-        if result != _Result.OK:
-            raise SqlError()
+        if result != _Result.Ok:
+            raise SqlError("")
 
     def fetch(self) -> bool:
         """Fetch the next row from the database. Returns ``True`` if a row was
@@ -118,19 +118,17 @@ class Statement:
 
         result = self._step()
 
-        if result == _Result.ROW:
-            c"""
-            this->_number_of_columns = sqlite3_data_count(this->stmt_p);
-            """
+        if result == _Result.Row:
+            c"this->_number_of_columns = sqlite3_data_count(this->stmt_p); "
 
             return True
         else:
             self._reset()
 
-            if result == _Result.DONE:
+            if result == _Result.Done:
                 return False
             else:
-                raise SqlError()
+                raise SqlError("")
 
     def _step(self) -> _Result:
         res = 0
@@ -150,13 +148,13 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError()
+            raise SqlError("")
 
-        c"""
-        column_type = sqlite3_column_type(this->stmt_p, column);
-        """
+        ctype: u8 = 0
 
-        return Type(column_type)
+        c"ctype = sqlite3_column_type(this->stmt_p, column);"
+
+        return Type(ctype)
 
     def column_int(self, column: u32) -> i64:
         """Get the value of given column as an integer.
@@ -164,13 +162,11 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError()
+            raise SqlError("")
 
         value = 0
 
-        c"""
-        value = sqlite3_column_int64(this->stmt_p, column);
-        """
+        c"value = sqlite3_column_int64(this->stmt_p, column);"
 
         return value
 
@@ -180,13 +176,11 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError()
+            raise SqlError("")
 
         value = 0.0
 
-        c"""
-        value = sqlite3_column_double(this->stmt_p, column);
-        """
+        c"value = sqlite3_column_double(this->stmt_p, column);"
 
         return value
 
@@ -196,7 +190,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError()
+            raise SqlError("")
 
         value: string = None
 
