@@ -4,25 +4,23 @@
 
 @enum
 class _Result:
-
-    OK = SQLITE_OK
-    ROW = SQLITE_ROW
-    DONE = SQLITE_DONE
+    Ok = c"SQLITE_OK"
+    Row = c"SQLITE_ROW"
+    Done = c"SQLITE_DONE"
 
 @enum(u8)
 class Type:
+    Integer = c"SQLITE_INTEGER"
+    Float = c"SQLITE_FLOAT"
+    String = c"SQLITE_TEXT"
+    Null = c"SQLITE_NULL"
+    Blob = c"SQLITE_BLOB"
 
-    INTEGER = SQLITE_INTEGER
-    FLOAT = SQLITE_FLOAT
-    STRING = SQLITE_TEXT
-    NULL = SQLITE_NULL
-    BLOB = SQLITE_BLOB
+class SqlError(Error):
+    message: string
 
 class Database:
-
-    """mys-embedded-c++
-    sqlite3 *database_p;
-    """
+    c"void *database_p;"
 
     def __init__(self, path: string):
         pass
@@ -45,66 +43,61 @@ class Database:
         return Statement(sql, self)
 
 class Statement:
-
     database: Database
     _number_of_columns: u32
 
-    """mys-embedded-c++
-    sqlite3_stmt *stmt_p;
-    """
+    c"void *stmt_p;"
 
     def __init__(self, sql: string, database: Database):
         self.database = database
         self._number_of_columns = 0
+        res = 0
 
-        """mys-embedded-c++
-        i64 res = sqlite3_prepare(sql, &this->stmt_p);
-        """
+        c"res = sqlite3_prepare(sql, &this->stmt_p);"
 
         if res != _Result.OK:
-            raise Error()
+            raise SqlError()
 
-    def __destroy__(self):
-        """mys-embedded-c++
-        (void)sqlite3_finalize(this->stmt_p);
-        """
+    def __del__(self):
+        c"sqlite3_finalize(this->stmt_p);"
 
     def bind_int(self, column: u32, value: i64):
-        """mys-embedded-c++
-        i64 res = sqlite3_bind_int64(this->stmt_p, column, value);
-        """
+        res = 0
+
+        c"res = sqlite3_bind_int64(this->stmt_p, column, value);"
 
         if res != _Result.OK:
-            raise Error()
+            raise SqlError()
 
     def bind_float(self, column: u32, value: f64):
-        """mys-embedded-c++
-        i64 res = sqlite3_bind_double(this->stmt_p, column, value);
-        """
+        res = 0
+
+        c"res = sqlite3_bind_double(this->stmt_p, column, value);"
 
         if res != _Result.OK:
-            raise Error()
+            raise SqlError()
 
     def bind_string(self, column: u32, value: string):
         value_utf8 = value.to_utf8()
+        res = 0
 
-        """mys-embedded-c++
-        i64 res = sqlite3_bind_text(this->stmt_p,
-                                    column,
-                                    value_utf8->buf_p,
-                                    SQLITE_TRANSIENT);
+        c"""
+        res = sqlite3_bind_text(this->stmt_p,
+                                column,
+                                value_utf8->buf_p,
+                                SQLITE_TRANSIENT);
         """
 
         if res != _Result.OK:
-            raise Error()
+            raise SqlError()
 
     def bind_null(self, column: u32):
-        """mys-embedded-c++
-        i64 res = sqlite3_bind_null(this->stmt_p, column);
-        """
+        res = 0
+
+        c"res = sqlite3_bind_null(this->stmt_p, column);"
 
         if res != _Result.OK:
-            raise Error()
+            raise SqlError()
 
     def execute(self):
         """Execute the statement.
@@ -112,11 +105,10 @@ class Statement:
         """
 
         result = self._step()
-
         self._reset()
 
         if result != _Result.OK:
-            raise Error()
+            raise SqlError()
 
     def fetch(self) -> bool:
         """Fetch the next row from the database. Returns ``True`` if a row was
@@ -127,8 +119,8 @@ class Statement:
         result = self._step()
 
         if result == _Result.ROW:
-            """mys-embedded-c++
-            this->_number_of_columns = sqlite3_data_count(this->stmt_p)
+            c"""
+            this->_number_of_columns = sqlite3_data_count(this->stmt_p);
             """
 
             return True
@@ -138,21 +130,19 @@ class Statement:
             if result == _Result.DONE:
                 return False
             else:
-                raise Error()
+                raise SqlError()
 
     def _step(self) -> _Result:
-        """mys-embedded-c++
-        i64 res = sqlite3_step(this->stmt_p);
-        """
+        res = 0
+
+        c"res = sqlite3_step(this->stmt_p);"
 
         return _Result(res)
 
     def _reset(self):
         self._number_of_columns = 0
 
-        """mys-embedded-c++
-        (void)sqlite3_reset(this->stmt_p);
-        """
+        c"sqlite3_reset(this->stmt_p);"
 
     def column_type(self, column: u32) -> Type:
         """Get the type of given column.
@@ -160,9 +150,9 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise Error()
+            raise SqlError()
 
-        """mys-embedded-c++
+        c"""
         column_type = sqlite3_column_type(this->stmt_p, column);
         """
 
@@ -174,10 +164,12 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise Error()
+            raise SqlError()
 
-        """mys-embedded-c++
-        i64 value = sqlite3_column_int64(this->stmt_p, column);
+        value = 0
+
+        c"""
+        value = sqlite3_column_int64(this->stmt_p, column);
         """
 
         return value
@@ -188,10 +180,12 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise Error()
+            raise SqlError()
 
-        """mys-embedded-c++
-        f64 value = sqlite3_column_double(this->stmt_p, column);
+        value = 0.0
+
+        c"""
+        value = sqlite3_column_double(this->stmt_p, column);
         """
 
         return value
@@ -202,10 +196,10 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise Error()
+            raise SqlError()
 
-        """mys-embedded-c++
-        auto value = String(sqlite3_column_text(this->stmt_p, column));
-        """
+        value: string = None
+
+        c"value = String(sqlite3_column_text(this->stmt_p, column));"
 
         return value

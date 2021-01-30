@@ -1,0 +1,7 @@
+[package]
+name = "sqlite-basics"
+version = "0.1.0"
+authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
+
+[dependencies]
+sqlite = { path = "../.." }
