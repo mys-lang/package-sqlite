@@ -20,20 +20,46 @@ class SqlError(Error):
     message: string
 
 class Database:
-    c"void *database_p;"
+    c"sqlite3 *database_p;"
 
     def __init__(self, path: string):
-        pass
+        path_utf8 = path.to_utf8()
+        path_utf8 += 0
+        res = 0
+
+        c"""
+        sqlite3_open((const char *)path_utf8.m_bytes->data(), &this->database_p);
+
+        if (this->database_p == NULL) {
+            res = 1;
+        }
+        """
+
+        if res != 0:
+            raise SqlError("sqlite3_open()")
 
     def __del__(self):
-        pass
+        c"sqlite3_close(this->database_p);"
 
     def execute(self, sql: string):
         """Execute the statement.
 
         """
 
-        raise NotImplementedError()
+        sql_utf8 = sql.to_utf8()
+        sql_utf8 += 0
+        res = _Result.Ok
+
+        c"""
+        res = sqlite3_exec(this->database_p,
+                           (const char *)sql_utf8.m_bytes->data(),
+                           NULL,
+                           NULL,
+                           NULL);
+        """
+
+        if res != _Result.Ok:
+            raise SqlError(create_error_message(self))
 
     def prepare(self, sql: string) -> Statement:
         """Prepare a statement.
@@ -42,21 +68,36 @@ class Database:
 
         return Statement(sql, self)
 
+def create_error_message(database: Database) -> string:
+    message: string = None
+
+    c"message = String(sqlite3_errmsg(database->database_p));"
+
+    return message
+
 class Statement:
     database: Database
     _number_of_columns: u32
 
-    c"void *stmt_p;"
+    c"sqlite3_stmt *stmt_p;"
 
     def __init__(self, sql: string, database: Database):
         self.database = database
         self._number_of_columns = 0
+        sql_utf8 = sql.to_utf8()
+        sql_utf8 += 0
         res = _Result.Ok
 
-        c"res = sqlite3_prepare(sql, &this->stmt_p);"
+        c"""
+        res = sqlite3_prepare(database->database_p,
+                              (const char *)sql_utf8.m_bytes->data(),
+                              -1,
+                              &this->stmt_p,
+                              NULL);
+        """
 
         if res != _Result.Ok:
-            raise SqlError("")
+            raise SqlError(create_error_message(database))
 
     def __del__(self):
         c"sqlite3_finalize(this->stmt_p);"
@@ -67,7 +108,7 @@ class Statement:
         c"res = sqlite3_bind_int64(this->stmt_p, column, value);"
 
         if res != _Result.Ok:
-            raise SqlError("")
+            raise SqlError(create_error_message(self.database))
 
     def bind_float(self, column: u32, value: f64):
         res = _Result.Ok
@@ -75,21 +116,23 @@ class Statement:
         c"res = sqlite3_bind_double(this->stmt_p, column, value);"
 
         if res != _Result.Ok:
-            raise SqlError("")
+            raise SqlError(create_error_message(self.database))
 
     def bind_string(self, column: u32, value: string):
         value_utf8 = value.to_utf8()
+        value_utf8 += 0
         res = _Result.Ok
 
         c"""
         res = sqlite3_bind_text(this->stmt_p,
                                 column,
-                                value_utf8->buf_p,
+                                (const char *)value_utf8.m_bytes->data(),
+                                -1,
                                 SQLITE_TRANSIENT);
         """
 
         if res != _Result.Ok:
-            raise SqlError("")
+            raise SqlError(create_error_message(self.database))
 
     def bind_null(self, column: u32):
         res = _Result.Ok
@@ -97,7 +140,7 @@ class Statement:
         c"res = sqlite3_bind_null(this->stmt_p, column);"
 
         if res != _Result.Ok:
-            raise SqlError("")
+            raise SqlError(create_error_message(self.database))
 
     def execute(self):
         """Execute the statement.
@@ -105,10 +148,14 @@ class Statement:
         """
 
         result = self._step()
-        self._reset()
 
-        if result != _Result.Ok:
-            raise SqlError("")
+        try:
+            if result != _Result.Done:
+                message = create_error_message(self.database)
+
+                raise SqlError(create_error_message(self.database))
+        finally:
+            self._reset()
 
     def fetch(self) -> bool:
         """Fetch the next row from the database. Returns ``True`` if a row was
@@ -128,7 +175,7 @@ class Statement:
             if result == _Result.Done:
                 return False
             else:
-                raise SqlError("")
+                raise SqlError("fetch")
 
     def _step(self) -> _Result:
         res = 0
@@ -148,7 +195,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("")
+            raise SqlError("bad column")
 
         ctype: u8 = 0
 
@@ -162,7 +209,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("")
+            raise SqlError("bad column")
 
         value = 0
 
@@ -176,7 +223,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("")
+            raise SqlError("bad column")
 
         value = 0.0
 
@@ -190,10 +237,10 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("")
+            raise SqlError("bad column")
 
         value: string = None
 
-        c"value = String(sqlite3_column_text(this->stmt_p, column));"
+        c"value = String((char *)sqlite3_column_text(this->stmt_p, column));"
 
         return value

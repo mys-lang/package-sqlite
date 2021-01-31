@@ -24,12 +24,12 @@ def create():
     database = Database(DATABASE_FILENAME)
     database.execute("CREATE TABLE tab(foo, bar, baz)")
 
-    print(f"Database {DATABASE_FILENAME} created.")
+    print(f"Database '{DATABASE_FILENAME}' created.")
 
 def insert():
     database = Database(DATABASE_FILENAME)
 
-    # First and second insertions. It is not recommended to insert
+    # First and second insertions. It is *not* recommended to insert
     # rows with execute(). Use prepared statements instead (see
     # below).
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
@@ -69,10 +69,10 @@ def select():
 
 def remove():
     # os.remove(DATABASE_FILENAME)
-    print(f"ToDo: Database {DATABASE_FILENAME} destroyed.")
+    print(f"ToDo: Database '{DATABASE_FILENAME}' destroyed.")
 
 def main(argv: [string]):
+    remove()
     create()
     insert()
     select()
-    remove()
