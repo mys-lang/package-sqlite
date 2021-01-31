@@ -1,4 +1,4 @@
-"""mys-embedded-c++-header-before-namespace
+c"""header-before-namespace
 #include <sqlite3.h>
 """
 
