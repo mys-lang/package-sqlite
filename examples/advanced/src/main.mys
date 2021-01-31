@@ -1,6 +1,4 @@
 from sqlite import Database
-from sqlite import Statement
-from sqlite import Type
 
 DATABASE_FILENAME: string = "the.db"
 
@@ -17,7 +15,7 @@ def insert():
     # rows with execute(). Use prepared statements instead (see
     # below).
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
-    database.execute("INSERT INTO tab VALUES(2,  2.2 ,'two')")
+    database.execute("INSERT INTO tab VALUES(2,  2.2, 'two')")
 
     # Insert using a prepared statement, which is faster (only parse
     # once) and safer than using execute() as above.

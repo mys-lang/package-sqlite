@@ -253,7 +253,7 @@ class Statement:
         elif column_type == Type.Float:
             return str(self.column_float(column))
         elif column_type == Type.String:
-            return self.column_string(column)
+            return f"\"{self.column_string(column)}\""
         elif column_type == Type.Null:
             return "null"
         elif column_type == Type.Blob:
