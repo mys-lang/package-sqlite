@@ -244,3 +244,19 @@ class Statement:
         c"value = String((char *)sqlite3_column_text(this->stmt_p, column));"
 
         return value
+
+    def column_value_string(self, column: u32) -> string:
+        column_type = self.column_type(column)
+
+        if column_type == Type.Integer:
+            return str(self.column_int(column))
+        elif column_type == Type.Float:
+            return str(self.column_float(column))
+        elif column_type == Type.String:
+            return self.column_string(column)
+        elif column_type == Type.Null:
+            return "null"
+        elif column_type == Type.Blob:
+            return "blob"
+        else:
+            raise SqlError(f"invalid column type {column_type}")
