@@ -19,5 +19,5 @@ jobs:
         pip install mys
     - name: Test
       run: |
-        make -C examples/basics
-        make -C examples/advanced
+        cd examples/basics && mys run
+        cd examples/advanced && mys run
