@@ -18,6 +18,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install mys
     - name: Test
-      run:
-        cd examples/basics && mys run
-        cd examples/advanced && mys run
+      run: |
+        (cd examples/basics && mys run)
+        (cd examples/advanced && mys run)
