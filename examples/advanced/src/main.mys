@@ -52,6 +52,7 @@ def select():
 
 def remove():
     rm(DATABASE_FILENAME, force=True)
+
     print(f"ToDo: Database '{DATABASE_FILENAME}' destroyed.")
 
 def main(argv: [string]):

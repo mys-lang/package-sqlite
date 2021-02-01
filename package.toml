@@ -4,5 +4,8 @@ version = "0.6.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "SQLite."
 
+[dependencies]
+os = "*"
+
 [c-dependencies]
 sqlite3 = "*"
