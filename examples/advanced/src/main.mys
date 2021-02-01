@@ -1,3 +1,4 @@
+from os import rm
 from sqlite import Database
 
 DATABASE_FILENAME: string = "the.db"
@@ -50,7 +51,7 @@ def select():
         row += 1
 
 def remove():
-    # os.remove(DATABASE_FILENAME)
+    rm(DATABASE_FILENAME, force=True)
     print(f"ToDo: Database '{DATABASE_FILENAME}' destroyed.")
 
 def main(argv: [string]):
