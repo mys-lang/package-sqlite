@@ -19,5 +19,6 @@ jobs:
         pip install mys
     - name: Test
       run: |
+        mys test
         (cd examples/basics && mys run)
         (cd examples/advanced && mys run)
