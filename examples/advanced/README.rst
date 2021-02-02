@@ -5,7 +5,7 @@ Build and run.
 
 .. code-block::
 
-   $ make
+   $ mys run
    ...
    ToDo: Database 'the.db' destroyed.
    Database 'the.db' created.

@@ -5,7 +5,7 @@ Build and run.
 
 .. code-block::
 
-   $ make
+   $ mys run
    ...
    Row:
      foo: 2
