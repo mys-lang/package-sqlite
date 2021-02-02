@@ -20,5 +20,5 @@ jobs:
     - name: Test
       run: |
         mys test
-        (cd examples/basics && mys run)
-        (cd examples/advanced && mys run)
+        mys -C examples/basics run
+        mys -C examples/advanced run
