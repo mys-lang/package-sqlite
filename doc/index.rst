@@ -39,6 +39,6 @@ Project
 
    modules
 
-.. _Mys programming language: https://github.com/mys-lang/mys
+.. _Mys programming language: https://mys.readthedocs.io/en/latest/
 
 .. _GitHub: https://github.com/mys-lang/package-sqlite
