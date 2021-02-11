@@ -44,7 +44,7 @@ class Database:
         c"sqlite3_close(this->database_p);"
 
     def execute(self, sql: string):
-        """Execute the statement.
+        """Execute given statement.
 
         """
 
@@ -61,16 +61,17 @@ class Database:
         """
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(self))
+            raise SqlError(_create_error_message(self))
 
     def prepare(self, sql: string) -> Statement:
-        """Prepare a statement.
+        """Prepare a statement. Safer than execute(), and faster if used more
+        than once.
 
         """
 
         return Statement(sql, self)
 
-def create_error_message(database: Database) -> string:
+def _create_error_message(database: Database) -> string:
     message: string = None
 
     c"message = String(sqlite3_errmsg(database->database_p));"
@@ -99,28 +100,40 @@ class Statement:
         """
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(database))
+            raise SqlError(_create_error_message(database))
 
     def __del__(self):
         c"sqlite3_finalize(this->stmt_p);"
 
     def bind_int(self, column: u32, value: i64):
+        """Bind given integer to given column.
+
+        """
+
         res = _Result.Ok
 
         c"res = sqlite3_bind_int64(this->stmt_p, column, value);"
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(self.database))
+            raise SqlError(_create_error_message(self.database))
 
     def bind_float(self, column: u32, value: f64):
+        """Bind given float to given column.
+
+        """
+
         res = _Result.Ok
 
         c"res = sqlite3_bind_double(this->stmt_p, column, value);"
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(self.database))
+            raise SqlError(_create_error_message(self.database))
 
     def bind_string(self, column: u32, value: string):
+        """Bind given string to given column.
+
+        """
+
         value_utf8 = value.to_utf8()
         value_utf8 += 0
         res = _Result.Ok
@@ -134,18 +147,23 @@ class Statement:
         """
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(self.database))
+            raise SqlError(_create_error_message(self.database))
 
     def bind_null(self, column: u32):
+        """Bind null to given column.
+
+        """
+
         res = _Result.Ok
 
         c"res = sqlite3_bind_null(this->stmt_p, column);"
 
         if res != _Result.Ok:
-            raise SqlError(create_error_message(self.database))
+            raise SqlError(_create_error_message(self.database))
 
     def execute(self):
-        """Execute the statement.
+        """Execute the statement. Bind any values to columns before executing
+        it.
 
         """
 
@@ -153,15 +171,17 @@ class Statement:
 
         try:
             if result != _Result.Done:
-                message = create_error_message(self.database)
+                message = _create_error_message(self.database)
 
-                raise SqlError(create_error_message(self.database))
+                raise SqlError(_create_error_message(self.database))
         finally:
             self._reset()
 
     def fetch(self) -> bool:
         """Fetch the next row from the database. Returns ``True`` if a row was
-        fetched and ``False`` when there are no more rows available.
+        fetched and ``False`` when there are no more rows
+        available. If fetched, get column values with column_*()
+        methods.
 
         """
 
@@ -248,6 +268,10 @@ class Statement:
         return value
 
     def column_value_string(self, column: u32) -> string:
+        """Get given columns value as a string.
+
+        """
+
         column_type = self.column_type(column)
 
         if column_type == Type.Integer:
