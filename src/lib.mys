@@ -12,6 +12,10 @@ class _Result:
 
 @enum(u8)
 class Type:
+    """Value type.
+
+    """
+
     Integer = c"SQLITE_INTEGER"
     Float = c"SQLITE_FLOAT"
     String = c"SQLITE_TEXT"
@@ -21,12 +25,17 @@ class Type:
 class SqlError(Error):
     message: string
 
+def _to_utf8(value: string) -> bytes:
+    value_utf8 = value.to_utf8()
+    value_utf8 += 0
+
+    return value_utf8
+
 class Database:
     c"sqlite3 *database_p;"
 
     def __init__(self, path: string):
-        path_utf8 = path.to_utf8()
-        path_utf8 += 0
+        path_utf8 = _to_utf8(path)
         res = 0
 
         c"""
@@ -48,8 +57,7 @@ class Database:
 
         """
 
-        sql_utf8 = sql.to_utf8()
-        sql_utf8 += 0
+        sql_utf8 = _to_utf8(sql)
         res = _Result.Ok
 
         c"""
@@ -87,8 +95,7 @@ class Statement:
     def __init__(self, sql: string, database: Database):
         self.database = database
         self._number_of_columns = 0
-        sql_utf8 = sql.to_utf8()
-        sql_utf8 += 0
+        sql_utf8 = _to_utf8(sql)
         res = _Result.Ok
 
         c"""
@@ -134,8 +141,7 @@ class Statement:
 
         """
 
-        value_utf8 = value.to_utf8()
-        value_utf8 += 0
+        value_utf8 = _to_utf8(value)
         res = _Result.Ok
 
         c"""

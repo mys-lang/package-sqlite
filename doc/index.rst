@@ -1,10 +1,12 @@
-Welcome to SQLite package documentation!
-========================================
+About
+=====
 
-SQLite in the `Mys programming language`_.
+SQLite wrapper in the `Mys programming language`_.
 
-Example
--------
+Project: https://github.com/mys-lang/package-sqlite
+
+An example
+==========
 
 A basic example that creates a table and then inserts and selects rows.
 
@@ -27,18 +29,9 @@ A basic example that creates a table and then inserts and selects rows.
            print("  bar:", statement.column_value_string(1))
            print("  baz:", statement.column_value_string(2))
 
-Project
--------
+Functions and types
+===================
 
-- `GitHub`_: Official project repository.
-
-.. toctree::
-   :maxdepth: 1
-   :titlesonly:
-   :hidden:
-
-   modules
+.. mysfile:: src/lib.mys
 
 .. _Mys programming language: https://mys.readthedocs.io/en/latest/
-
-.. _GitHub: https://github.com/mys-lang/package-sqlite
