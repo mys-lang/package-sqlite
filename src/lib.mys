@@ -35,19 +35,19 @@ class Database:
     c"sqlite3 *database_p;"
 
     def __init__(self, path: string):
-        path_utf8 = _to_utf8(path)
-        res = 0
+        """Create or open a database.
 
-        c"""
-        sqlite3_open((const char *)path_utf8.m_bytes->data(), &this->database_p);
-
-        if (this->database_p == NULL) {
-            res = 1;
-        }
         """
 
-        if res != 0:
-            raise SqlError("sqlite3_open()")
+        path_utf8 = _to_utf8(path)
+        res = _Result.Ok
+
+        c"""
+        res = sqlite3_open((const char *)path_utf8.m_bytes->data(), &this->database_p);
+        """
+
+        if res != _Result.Ok:
+            raise SqlError("failed to open the database")
 
     def __del__(self):
         c"sqlite3_close(this->database_p);"
@@ -223,7 +223,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("bad column")
+            raise SqlError(f"bad column {column}")
 
         ctype: u8 = 0
 
@@ -237,7 +237,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("bad column")
+            raise SqlError(f"bad column {column}")
 
         value = 0
 
@@ -251,7 +251,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("bad column")
+            raise SqlError(f"bad column {column}")
 
         value = 0.0
 
@@ -265,7 +265,7 @@ class Statement:
         """
 
         if column >= self._number_of_columns:
-            raise SqlError("bad column")
+            raise SqlError(f"bad column {column}")
 
         value: string = None
 
@@ -395,3 +395,84 @@ def test_try_to_create_existing_table():
     assert message == "table tab already exists"
 
     rm("the.db", force=True)
+
+@test
+def test_prepare_bad_statement():
+    rm("the.db", force=True)
+
+    database = Database("the.db")
+
+    try:
+        message = ""
+        database.prepare("FOOBAR 123")
+    except SqlError as e:
+        message = e.message
+
+    assert message == "near \"FOOBAR\": syntax error"
+
+    rm("the.db", force=True)
+
+@test
+def test_bad_column():
+    rm("the.db", force=True)
+
+    database = Database("the.db")
+
+    database.execute("CREATE TABLE tab(foo, bar, baz)")
+    database.execute("INSERT INTO tab VALUES(1, 'one', null)")
+
+    statement = database.prepare("SELECT * FROM tab")
+
+    assert statement.fetch()
+    assert statement.column_type(2) == Type.Null
+
+    try:
+        message = ""
+        statement.column_type(3)
+    except SqlError as e:
+        message = e.message
+
+    assert message == "bad column 3"
+
+    try:
+        message = ""
+        statement.column_int(4)
+    except SqlError as e:
+        message = e.message
+
+    assert message == "bad column 4"
+
+    try:
+        message = ""
+        statement.column_string(10)
+    except SqlError as e:
+        message = e.message
+
+    assert message == "bad column 10"
+
+    try:
+        message = ""
+        statement.column_float(3)
+    except SqlError as e:
+        message = e.message
+
+    assert message == "bad column 3"
+
+    rm("the.db", force=True)
+
+@test
+def test_column_value_string():
+    rm("the.db", force=True)
+
+    database = Database("the.db")
+
+    database.execute("CREATE TABLE tab(foo, bar, baz, bak)")
+    database.execute("INSERT INTO tab VALUES(1, 'one', null, 1.0)")
+
+    statement = database.prepare("SELECT * FROM tab")
+
+    assert statement.fetch()
+    assert statement.column_value_string(0) == "1"
+    assert statement.column_value_string(1) == "\"one\""
+    assert statement.column_value_string(2) == "null"
+    assert statement.column_value_string(3) == "1.000000"
