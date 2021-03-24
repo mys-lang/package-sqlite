@@ -1,11 +1,11 @@
 [package]
 name = "sqlite"
-version = "0.8.0"
+version = "0.9.0"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "SQLite."
 
 [dependencies]
-os = "*"
+os = "latest"
 
 [c-dependencies]
-sqlite3 = "*"
+sqlite3 = "latest"
