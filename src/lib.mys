@@ -181,7 +181,7 @@ class Statement:
 
                 raise SqlError(_create_error_message(self.database))
         finally:
-            self._reset()
+            self.reset()
 
     def fetch(self) -> bool:
         """Fetch the next row from the database. Returns ``True`` if a row was
@@ -198,7 +198,7 @@ class Statement:
 
             return True
         else:
-            self._reset()
+            self.reset()
 
             if result == _Result.Done:
                 return False
@@ -212,7 +212,7 @@ class Statement:
 
         return _Result(res)
 
-    def _reset(self):
+    def reset(self):
         self._number_of_columns = 0
 
         c"sqlite3_reset(this->stmt_p);"
@@ -476,3 +476,81 @@ def test_column_value_string():
     assert statement.column_value_string(1) == "\"one\""
     assert statement.column_value_string(2) == "null"
     assert statement.column_value_string(3) == "1.000000"
+
+@test
+def test_statement():
+    rm("the.db", force=True)
+
+    database = Database("the.db")
+
+    database.execute("CREATE TABLE tab(x)")
+    database.execute("INSERT INTO tab VALUES(5)")
+    database.execute("INSERT INTO tab VALUES(6)")
+    database.execute("INSERT INTO tab VALUES(7)")
+
+    statement = database.prepare("SELECT * FROM tab WHERE x >= ? ORDER BY x")
+
+    # Get all.
+    statement.bind_int(1, 2)
+    assert statement.fetch()
+    assert statement.column_int(0) == 5
+    assert statement.fetch()
+    assert statement.column_int(0) == 6
+    assert statement.fetch()
+    assert not statement.fetch()
+
+    # Get one then reset.
+    statement.bind_int(1, 2)
+    assert statement.fetch()
+    assert statement.column_int(0) == 5
+    statement.reset()
+    assert statement.fetch()
+    assert statement.column_int(0) == 5
+
+    # Bind before reset.
+    try:
+        ok = False
+        statement.bind_int(1, 2)
+    except SqlError:
+        ok = True
+
+    assert ok
+    statement.reset()
+
+    # Fetch from beginning once all rows read.
+    statement.bind_int(1, 2)
+    assert statement.fetch()
+    assert statement.column_int(0) == 5
+    assert statement.fetch()
+    assert statement.fetch()
+    assert not statement.fetch()
+    assert statement.fetch()
+    assert statement.column_int(0) == 5
+
+    rm("the.db", force=True)
+
+@test
+def test_two_database_connections():
+    rm("the.db", force=True)
+
+    database_1 = Database("the.db")
+    database_2 = Database("the.db")
+
+    database_1.execute("CREATE TABLE tab(x)")
+    database_1.execute("INSERT INTO tab VALUES(5)")
+    database_1.execute("INSERT INTO tab VALUES(6)")
+
+    statement_1 = database_1.prepare("SELECT * FROM tab WHERE x = ?")
+    statement_2 = database_2.prepare("SELECT * FROM tab WHERE x = ?")
+
+    # Fetch interleaved.
+    statement_1.bind_int(1, 5)
+    statement_2.bind_int(1, 6)
+    assert statement_2.fetch()
+    assert statement_2.column_int(0) == 6
+    assert statement_1.fetch()
+    assert statement_1.column_int(0) == 5
+    assert not statement_1.fetch()
+    assert not statement_2.fetch()
+
+    rm("the.db", force=True)
