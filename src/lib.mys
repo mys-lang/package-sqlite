@@ -169,7 +169,7 @@ class Statement:
 
     def execute(self):
         """Execute the statement. Bind any values to columns before executing
-        it.
+        it. Calls reset() once complete.
 
         """
 
@@ -184,10 +184,10 @@ class Statement:
             self.reset()
 
     def fetch(self) -> bool:
-        """Fetch the next row from the database. Returns ``True`` if a row was
-        fetched and ``False`` when there are no more rows
-        available. If fetched, get column values with column_*()
-        methods.
+        """Fetch the next row from the database. Returns True if a row was
+        fetched, or calls reset() and returns False when there are no
+        more rows available. If fetched, get column values with
+        column_*() methods.
 
         """
 
@@ -213,6 +213,10 @@ class Statement:
         return _Result(res)
 
     def reset(self):
+        """Reset the statement so it can be used again.
+
+        """
+
         self._number_of_columns = 0
 
         c"sqlite3_reset(this->stmt_p);"
