@@ -20,7 +20,7 @@ class Type:
     Float = c"SQLITE_FLOAT"
     String = c"SQLITE_TEXT"
     Null = c"SQLITE_NULL"
-    Blob = c"SQLITE_BLOB"
+    Bytes = c"SQLITE_BLOB"
 
 class SqlError(Error):
     message: string
@@ -327,7 +327,7 @@ class Statement:
             return str(self.column_float(column))
         elif column_type == Type.String:
             return f"\"{self.column_string(column)}\""
-        elif column_type == Type.Blob:
+        elif column_type == Type.Bytes:
             return str(self.column_bytes(column))
         elif column_type == Type.Null:
             return "null"
@@ -367,7 +367,7 @@ def test_basics():
     assert statement.fetch()
     assert statement.column_type(0) == Type.Integer
     assert statement.column_int(0) == 4
-    assert statement.column_type(1) == Type.Blob
+    assert statement.column_type(1) == Type.Bytes
     assert statement.column_bytes(1) == b"\x89"
     assert statement.column_type(2) == Type.Null
 
@@ -431,7 +431,7 @@ def test_advanced():
     assert statement.fetch()
     assert statement.column_type(0) == Type.Integer
     assert statement.column_int(0) == 5
-    assert statement.column_type(1) == Type.Blob
+    assert statement.column_type(1) == Type.Bytes
     assert statement.column_bytes(1) == b"\x12\x34"
     assert statement.column_type(2) == Type.Null
 
