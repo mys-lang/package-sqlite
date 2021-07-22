@@ -31,8 +31,8 @@ A basic example that creates a table and then inserts and selects rows.
            print("  bar:", statement.column_value_string(1))
            print("  baz:", statement.column_value_string(2))
 
-Functions and types
-===================
+API
+===
 
 .. mysfile:: src/lib.mys
 

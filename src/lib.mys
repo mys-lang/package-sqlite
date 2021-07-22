@@ -155,6 +155,24 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
+    def bind_bytes(self, column: u32, value: bytes):
+        """Bind given bytes to given column.
+
+        """
+
+        res = _Result.Ok
+
+        c"""
+        res = sqlite3_bind_blob(this->stmt_p,
+                                column,
+                                (const char *)value.m_bytes->data(),
+                                value.m_bytes->size(),
+                                SQLITE_TRANSIENT);
+        """
+
+        if res != _Result.Ok:
+            raise SqlError(_create_error_message(self.database))
+
     def bind_null(self, column: u32):
         """Bind null to given column.
 
@@ -277,6 +295,25 @@ class Statement:
 
         return value
 
+    def column_bytes(self, column: u32) -> bytes:
+        """Get the value of given column as bytes.
+
+        """
+
+        if column >= self._number_of_columns:
+            raise SqlError(f"bad column {column}")
+
+        value: bytes = None
+
+        c"""
+        value = Bytes(sqlite3_column_bytes(this->stmt_p, column));
+        memcpy(value.m_bytes->data(),
+               sqlite3_column_blob(this->stmt_p, column),
+               value.m_bytes->size());
+        """
+
+        return value
+
     def column_value_string(self, column: u32) -> string:
         """Get given columns value as a string.
 
@@ -290,10 +327,10 @@ class Statement:
             return str(self.column_float(column))
         elif column_type == Type.String:
             return f"\"{self.column_string(column)}\""
-        elif column_type == Type.Null:
-            return "null"
         elif column_type == Type.Blob:
             return "blob"
+        elif column_type == Type.Null:
+            return "null"
         else:
             raise SqlError(f"invalid column type {column_type}")
 
@@ -307,6 +344,7 @@ def test_basics():
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
     database.execute("INSERT INTO tab VALUES(2,  2.2, 'two')")
     database.execute("INSERT INTO tab VALUES(3,  'three', null)")
+    database.execute("INSERT INTO tab VALUES(4,  X'89', null)")
 
     statement = database.prepare("SELECT * FROM tab WHERE foo >= ? ORDER BY foo")
     statement.bind_int(1, 2)
@@ -324,6 +362,13 @@ def test_basics():
     assert statement.column_int(0) == 3
     assert statement.column_type(1) == Type.String
     assert statement.column_string(1) == "three"
+    assert statement.column_type(2) == Type.Null
+
+    assert statement.fetch()
+    assert statement.column_type(0) == Type.Integer
+    assert statement.column_int(0) == 4
+    assert statement.column_type(1) == Type.Blob
+    assert statement.column_bytes(1) == b"\x89"
     assert statement.column_type(2) == Type.Null
 
     assert not statement.fetch()
@@ -352,6 +397,11 @@ def test_advanced():
     statement.bind_null(3)
     statement.execute()
 
+    statement.bind_int(1, 5)
+    statement.bind_bytes(2, b"\x12\x34")
+    statement.bind_null(3)
+    statement.execute()
+
     statement = database.prepare("SELECT * FROM tab WHERE foo >= ? ORDER BY foo")
     statement.bind_int(1, 2)
 
@@ -376,6 +426,13 @@ def test_advanced():
     assert statement.column_int(0) == 4
     assert statement.column_type(1) == Type.String
     assert statement.column_string(1) == "four"
+    assert statement.column_type(2) == Type.Null
+
+    assert statement.fetch()
+    assert statement.column_type(0) == Type.Integer
+    assert statement.column_int(0) == 5
+    assert statement.column_type(1) == Type.Blob
+    assert statement.column_bytes(1) == b"\x12\x34"
     assert statement.column_type(2) == Type.Null
 
     assert not statement.fetch()
@@ -462,6 +519,14 @@ def test_bad_column():
 
     assert message == "bad column 3"
 
+    try:
+        message = ""
+        statement.column_bytes(3)
+    except SqlError as e:
+        message = e.message
+
+    assert message == "bad column 3"
+
     rm("the.db", force=True)
 
 @test
@@ -470,8 +535,8 @@ def test_column_value_string():
 
     database = Database("the.db")
 
-    database.execute("CREATE TABLE tab(foo, bar, baz, bak)")
-    database.execute("INSERT INTO tab VALUES(1, 'one', null, 1.0)")
+    database.execute("CREATE TABLE tab(foo, bar, baz, bak, bat)")
+    database.execute("INSERT INTO tab VALUES(1, 'one', null, 1.0, X'012345')")
 
     statement = database.prepare("SELECT * FROM tab")
 
@@ -480,6 +545,7 @@ def test_column_value_string():
     assert statement.column_value_string(1) == "\"one\""
     assert statement.column_value_string(2) == "null"
     assert statement.column_value_string(3) == "1.000000"
+    assert statement.column_value_string(4) == "blob"
 
 @test
 def test_statement():
