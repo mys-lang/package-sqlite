@@ -328,7 +328,7 @@ class Statement:
         elif column_type == Type.String:
             return f"\"{self.column_string(column)}\""
         elif column_type == Type.Blob:
-            return "blob"
+            return str(self.column_bytes(column))
         elif column_type == Type.Null:
             return "null"
         else:
@@ -545,7 +545,7 @@ def test_column_value_string():
     assert statement.column_value_string(1) == "\"one\""
     assert statement.column_value_string(2) == "null"
     assert statement.column_value_string(3) == "1.000000"
-    assert statement.column_value_string(4) == "blob"
+    assert statement.column_value_string(4) == "b\"\\x01\\x23\\x45\""
 
 @test
 def test_statement():
