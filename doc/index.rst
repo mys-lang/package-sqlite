@@ -31,6 +31,19 @@ A basic example that creates a table and then inserts and selects rows.
            print("  bar:", statement.column_value_string(1))
            print("  baz:", statement.column_value_string(2))
 
+Build and run:
+
+   $ mys run
+   ...
+   Row:
+     foo: 2
+     bar: 2.200000
+     baz: "two"
+   Row:
+     foo: 3
+     bar: "three"
+     baz: null
+
 API
 ===
 
