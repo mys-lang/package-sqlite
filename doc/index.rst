@@ -33,6 +33,8 @@ A basic example that creates a table and then inserts and selects rows.
 
 Build and run:
 
+.. code-block::
+
    $ mys run
    ...
    Row:
