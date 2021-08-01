@@ -1,4 +1,6 @@
+|discord|_
 |test|_
+|stars|_
 
 About
 =====
@@ -12,7 +14,7 @@ An example
 
 A basic example that creates a table and then inserts and selects rows.
 
-.. code-block:: python
+.. code-block:: mys
 
    from sqlite import Database
 
@@ -33,10 +35,11 @@ A basic example that creates a table and then inserts and selects rows.
 
 Build and run:
 
-.. code-block::
+.. code-block:: myscon
 
-   $ mys run
-   ...
+   ❯ mys run
+    ✔ Reading package configuration (0 seconds)
+    ✔ Building (1.51 seconds)
    Row:
      foo: 2
      bar: 2.200000
@@ -51,7 +54,13 @@ API
 
 .. mysfile:: src/lib.mys
 
+.. |discord| image:: https://img.shields.io/discord/777073391320170507?label=Discord&logo=discord&logoColor=white
+.. _discord: https://discord.gg/GFDN7JvWKS
+
 .. |test| image:: https://github.com/mys-lang/package-sqlite/actions/workflows/pythonpackage.yml/badge.svg
 .. _test: https://github.com/mys-lang/package-sqlite/actions/workflows/pythonpackage.yml
+
+.. |stars| image:: https://img.shields.io/github/stars/mys-lang/package-sqlite?style=social
+.. _stars: https://github.com/mys-lang/package-sqlite
 
 .. _Mys programming language: https://mys-lang.org
