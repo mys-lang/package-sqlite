@@ -2,6 +2,7 @@ from os import rm
 
 c"""header-before-namespace
 #include <sqlite3.h>
+#include <string.h>
 """
 
 @enum
