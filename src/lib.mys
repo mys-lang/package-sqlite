@@ -90,7 +90,6 @@ def _create_error_message(database: Database) -> string:
 class Statement:
     database: Database
     _number_of_columns: u32
-
     c"sqlite3_stmt *stmt_p;"
 
     def __init__(self, sql: string, database: Database):
