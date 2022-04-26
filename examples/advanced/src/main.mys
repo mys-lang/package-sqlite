@@ -1,16 +1,16 @@
-from os import rm
+from os.path import Path
 from sqlite import Database
 
-DATABASE_FILENAME: string = "the.db"
+DATABASE: Path = Path("the.db")
 
 def create():
-    database = Database(DATABASE_FILENAME)
+    database = Database(DATABASE)
     database.execute("CREATE TABLE tab(foo, bar, baz)")
 
-    print(f"Database '{DATABASE_FILENAME}' created.")
+    print(f"Database '{DATABASE}' created.")
 
 def insert():
-    database = Database(DATABASE_FILENAME)
+    database = Database(DATABASE)
 
     # First and second insertions. It is *not* recommended to insert
     # rows with execute(). Use prepared statements instead (see
@@ -37,7 +37,7 @@ def insert():
     print("Four rows inserted.")
 
 def select():
-    database = Database(DATABASE_FILENAME)
+    database = Database(DATABASE)
     statement = database.prepare("SELECT * FROM tab WHERE foo >= ? ORDER BY foo")
     statement.bind_int(1, 2)
     row = 1
@@ -51,9 +51,9 @@ def select():
         row += 1
 
 def remove():
-    rm(DATABASE_FILENAME, force=True)
+    DATABASE.rm(force=True)
 
-    print(f"ToDo: Database '{DATABASE_FILENAME}' destroyed.")
+    print(f"ToDo: Database '{DATABASE}' destroyed.")
 
 def main(argv: [string]):
     remove()

@@ -1,11 +1,11 @@
-from os import rm
+from os.path import Path
 from sqlite import Database
 
-DATABASE_FILENAME: string = "the.db"
+DATABASE: Path = Path("the.db")
 
 def main():
-    rm(DATABASE_FILENAME, force=True)
-    database = Database(DATABASE_FILENAME)
+    DATABASE.rm(force=True)
+    database = Database(DATABASE)
     database.execute("CREATE TABLE tab(foo, bar, baz)")
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
     database.execute("INSERT INTO tab VALUES(2,  2.2, 'two')")

@@ -1,4 +1,4 @@
-from os import rm
+from os.path import Path
 
 c"""header-before-namespace
 #include <sqlite3.h>
@@ -35,12 +35,12 @@ def _to_utf8(value: string) -> bytes:
 class Database:
     c"sqlite3 *database_p;"
 
-    def __init__(self, path: string):
+    def __init__(self, path: Path):
         """Create or open a database.
 
         """
 
-        path_utf8 = _to_utf8(path)
+        path_utf8 = _to_utf8(str(path))
         res = _Result.Ok
 
         c"""
@@ -336,9 +336,9 @@ class Statement:
 
 @test
 def test_basics():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz)")
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
@@ -373,13 +373,13 @@ def test_basics():
 
     assert not statement.fetch()
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_advanced():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz)")
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
@@ -437,13 +437,13 @@ def test_advanced():
 
     assert not statement.fetch()
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_try_to_create_existing_table():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz)")
     message: string = None
@@ -455,13 +455,13 @@ def test_try_to_create_existing_table():
 
     assert message == "table tab already exists"
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_prepare_bad_statement():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     try:
         message = ""
@@ -471,13 +471,13 @@ def test_prepare_bad_statement():
 
     assert message == "near \"FOOBAR\": syntax error"
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_bad_column():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz)")
     database.execute("INSERT INTO tab VALUES(1, 'one', null)")
@@ -527,13 +527,13 @@ def test_bad_column():
 
     assert message == "bad column 3"
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_column_value_string():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz, bak, bat)")
     database.execute("INSERT INTO tab VALUES(1, 'one', null, 1.0, X'012345')")
@@ -549,9 +549,9 @@ def test_column_value_string():
 
 @test
 def test_statement():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database = Database("the.db")
+    database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(x)")
     database.execute("INSERT INTO tab VALUES(5)")
@@ -597,14 +597,14 @@ def test_statement():
     assert statement.fetch()
     assert statement.column_int(0) == 5
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
 @test
 def test_two_database_connections():
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
 
-    database_1 = Database("the.db")
-    database_2 = Database("the.db")
+    database_1 = Database(Path("the.db"))
+    database_2 = Database(Path("the.db"))
 
     database_1.execute("CREATE TABLE tab(x)")
     database_1.execute("INSERT INTO tab VALUES(5)")
@@ -623,4 +623,4 @@ def test_two_database_connections():
     assert not statement_1.fetch()
     assert not statement_2.fetch()
 
-    rm("the.db", force=True)
+    Path("the.db").rm(force=True)
