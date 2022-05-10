@@ -18,7 +18,7 @@ A basic example that creates a table and then inserts and selects rows.
 
    from sqlite import Database
 
-   def main():
+   func main():
        database = Database("my.db")
        database.execute("CREATE TABLE tab(foo, bar, baz)")
        database.execute("INSERT INTO tab VALUES(1, 'one', null)")

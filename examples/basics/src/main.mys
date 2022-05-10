@@ -3,7 +3,7 @@ from sqlite import Database
 
 DATABASE: Path = Path("the.db")
 
-def main():
+func main():
     DATABASE.rm(force=True)
     database = Database(DATABASE)
     database.execute("CREATE TABLE tab(foo, bar, baz)")

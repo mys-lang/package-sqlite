@@ -26,7 +26,7 @@ class Type:
 class SqlError(Error):
     message: string
 
-def _to_utf8(value: string) -> bytes:
+func _to_utf8(value: string) -> bytes:
     value_utf8 = value.to_utf8()
     value_utf8 += 0
 
@@ -35,7 +35,7 @@ def _to_utf8(value: string) -> bytes:
 class Database:
     c"sqlite3 *database_p;"
 
-    def __init__(self, path: Path):
+    func __init__(self, path: Path):
         """Create or open a database.
 
         """
@@ -50,10 +50,10 @@ class Database:
         if res != _Result.Ok:
             raise SqlError("failed to open the database")
 
-    def __del__(self):
+    func __del__(self):
         c"sqlite3_close(this->database_p);"
 
-    def execute(self, sql: string):
+    func execute(self, sql: string):
         """Execute given statement.
 
         """
@@ -72,7 +72,7 @@ class Database:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self))
 
-    def prepare(self, sql: string) -> Statement:
+    func prepare(self, sql: string) -> Statement:
         """Prepare a statement. Safer than execute(), and faster if used more
         than once.
 
@@ -80,7 +80,7 @@ class Database:
 
         return Statement(sql, self)
 
-def _create_error_message(database: Database) -> string:
+func _create_error_message(database: Database) -> string:
     message: string = None
 
     c"message = String(sqlite3_errmsg(database->database_p));"
@@ -92,7 +92,7 @@ class Statement:
     _number_of_columns: u32
     c"sqlite3_stmt *stmt_p;"
 
-    def __init__(self, sql: string, database: Database):
+    func __init__(self, sql: string, database: Database):
         self.database = database
         self._number_of_columns = 0
         sql_utf8 = _to_utf8(sql)
@@ -109,10 +109,10 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(database))
 
-    def __del__(self):
+    func __del__(self):
         c"sqlite3_finalize(this->stmt_p);"
 
-    def bind_int(self, column: u32, value: i64):
+    func bind_int(self, column: u32, value: i64):
         """Bind given integer to given column.
 
         """
@@ -124,7 +124,7 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
-    def bind_float(self, column: u32, value: f64):
+    func bind_float(self, column: u32, value: f64):
         """Bind given float to given column.
 
         """
@@ -136,7 +136,7 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
-    def bind_string(self, column: u32, value: string):
+    func bind_string(self, column: u32, value: string):
         """Bind given string to given column.
 
         """
@@ -155,7 +155,7 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
-    def bind_bytes(self, column: u32, value: bytes):
+    func bind_bytes(self, column: u32, value: bytes):
         """Bind given bytes to given column.
 
         """
@@ -173,7 +173,7 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
-    def bind_null(self, column: u32):
+    func bind_null(self, column: u32):
         """Bind null to given column.
 
         """
@@ -185,7 +185,7 @@ class Statement:
         if res != _Result.Ok:
             raise SqlError(_create_error_message(self.database))
 
-    def execute(self):
+    func execute(self):
         """Execute the statement. Bind any values to columns before executing
         it. Calls reset() once complete.
 
@@ -201,7 +201,7 @@ class Statement:
         finally:
             self.reset()
 
-    def fetch(self) -> bool:
+    func fetch(self) -> bool:
         """Fetch the next row from the database. Returns True if a row was
         fetched, or calls reset() and returns False when there are no
         more rows available. If fetched, get column values with
@@ -223,14 +223,14 @@ class Statement:
             else:
                 raise SqlError("fetch")
 
-    def _step(self) -> _Result:
+    func _step(self) -> _Result:
         res = 0
 
         c"res = sqlite3_step(this->stmt_p);"
 
         return _Result(res)
 
-    def reset(self):
+    func reset(self):
         """Reset the statement so it can be used again.
 
         """
@@ -239,7 +239,7 @@ class Statement:
 
         c"sqlite3_reset(this->stmt_p);"
 
-    def column_type(self, column: u32) -> Type:
+    func column_type(self, column: u32) -> Type:
         """Get the type of given column.
 
         """
@@ -253,7 +253,7 @@ class Statement:
 
         return Type(ctype)
 
-    def column_int(self, column: u32) -> i64:
+    func column_int(self, column: u32) -> i64:
         """Get the value of given column as an integer.
 
         """
@@ -267,7 +267,7 @@ class Statement:
 
         return value
 
-    def column_float(self, column: u32) -> f64:
+    func column_float(self, column: u32) -> f64:
         """Get the value of given column as a float.
 
         """
@@ -281,7 +281,7 @@ class Statement:
 
         return value
 
-    def column_string(self, column: u32) -> string:
+    func column_string(self, column: u32) -> string:
         """Get the value of given column as a string.
 
         """
@@ -295,7 +295,7 @@ class Statement:
 
         return value
 
-    def column_bytes(self, column: u32) -> bytes:
+    func column_bytes(self, column: u32) -> bytes:
         """Get the value of given column as bytes.
 
         """
@@ -314,7 +314,7 @@ class Statement:
 
         return value
 
-    def column_value_string(self, column: u32) -> string:
+    func column_value_string(self, column: u32) -> string:
         """Get given columns value as a string.
 
         """
@@ -335,7 +335,7 @@ class Statement:
             raise SqlError(f"invalid column type {column_type}")
 
 @test
-def test_basics():
+func test_basics():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -376,7 +376,7 @@ def test_basics():
     Path("the.db").rm(force=True)
 
 @test
-def test_advanced():
+func test_advanced():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -440,7 +440,7 @@ def test_advanced():
     Path("the.db").rm(force=True)
 
 @test
-def test_try_to_create_existing_table():
+func test_try_to_create_existing_table():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -458,7 +458,7 @@ def test_try_to_create_existing_table():
     Path("the.db").rm(force=True)
 
 @test
-def test_prepare_bad_statement():
+func test_prepare_bad_statement():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -474,7 +474,7 @@ def test_prepare_bad_statement():
     Path("the.db").rm(force=True)
 
 @test
-def test_bad_column():
+func test_bad_column():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -530,7 +530,7 @@ def test_bad_column():
     Path("the.db").rm(force=True)
 
 @test
-def test_column_value_string():
+func test_column_value_string():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -548,7 +548,7 @@ def test_column_value_string():
     assert statement.column_value_string(4) == "b\"\\x01\\x23\\x45\""
 
 @test
-def test_statement():
+func test_statement():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -600,7 +600,7 @@ def test_statement():
     Path("the.db").rm(force=True)
 
 @test
-def test_two_database_connections():
+func test_two_database_connections():
     Path("the.db").rm(force=True)
 
     database_1 = Database(Path("the.db"))

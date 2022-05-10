@@ -3,13 +3,13 @@ from sqlite import Database
 
 DATABASE: Path = Path("the.db")
 
-def create():
+func create():
     database = Database(DATABASE)
     database.execute("CREATE TABLE tab(foo, bar, baz)")
 
     print(f"Database '{DATABASE}' created.")
 
-def insert():
+func insert():
     database = Database(DATABASE)
 
     # First and second insertions. It is *not* recommended to insert
@@ -36,7 +36,7 @@ def insert():
 
     print("Four rows inserted.")
 
-def select():
+func select():
     database = Database(DATABASE)
     statement = database.prepare("SELECT * FROM tab WHERE foo >= ? ORDER BY foo")
     statement.bind_int(1, 2)
@@ -50,12 +50,12 @@ def select():
 
         row += 1
 
-def remove():
+func remove():
     DATABASE.rm(force=True)
 
     print(f"ToDo: Database '{DATABASE}' destroyed.")
 
-def main(argv: [string]):
+func main(argv: [string]):
     remove()
     create()
     insert()
