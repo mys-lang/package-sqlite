@@ -545,7 +545,7 @@ func test_column_value_string():
     assert statement.column_value_string(1) == "\"one\""
     assert statement.column_value_string(2) == "null"
     assert statement.column_value_string(3) == "1.000000"
-    assert statement.column_value_string(4) == "b\"\\x01\\x23\\x45\""
+    assert statement.column_value_string(4) == "b\"\\x01#E\""
 
 @test
 func test_statement():
