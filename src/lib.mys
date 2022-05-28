@@ -289,11 +289,17 @@ class Statement:
         if column >= self._number_of_columns:
             raise SqlError(f"bad column {column}")
 
-        value: string = None
+        value = b""
 
-        c"value = String((char *)sqlite3_column_text(this->stmt_p, column));"
+        c"""
+        const unsigned char *value_p = sqlite3_column_text(this->stmt_p, column);
 
-        return value
+        for (size_t i = 0; i < strlen((const char *)value_p); i++) {
+            value += value_p[i];
+        }
+        """
+
+        return string(value)
 
     func column_bytes(self, column: u32) -> bytes:
         """Get the value of given column as bytes.
@@ -624,3 +630,16 @@ func test_two_database_connections():
     assert not statement_2.fetch()
 
     Path("the.db").rm(force=True)
+
+@test
+func test_string():
+    path = Path("the.db")
+    path.rm(force=True)
+    database = Database(path)
+    database.execute("CREATE TABLE tab(x)")
+    statement = database.prepare("INSERT INTO tab VALUES(?)")
+    statement.bind_string(1, "📦")
+    statement.execute()
+    statement = database.prepare("SELECT * FROM tab")
+    assert statement.fetch()
+    assert statement.column_string(0) == "📦"
