@@ -294,10 +294,17 @@ class Statement:
         c"""
         const unsigned char *value_p = sqlite3_column_text(this->stmt_p, column);
 
-        for (size_t i = 0; i < strlen((const char *)value_p); i++) {
-            value += value_p[i];
+        if (value_p != NULL) {
+            for (size_t i = 0; i < strlen((const char *)value_p); i++) {
+                value += value_p[i];
+            }
+        } else {
+            value = nullptr;
         }
         """
+
+        if value is None:
+            return None
 
         return string(value)
 

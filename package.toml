@@ -1,6 +1,6 @@
 [package]
 name = "sqlite"
-version = "0.26.1"
+version = "0.26.2"
 authors = ["Erik Moqvist <erik.moqvist@gmail.com>"]
 description = "SQLite."
 
