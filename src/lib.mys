@@ -347,8 +347,7 @@ class Statement:
         else:
             raise SqlError(f"invalid column type {column_type}")
 
-@test
-func test_basics():
+test basics():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -388,8 +387,7 @@ func test_basics():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_advanced():
+test advanced():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -452,8 +450,7 @@ func test_advanced():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_try_to_create_existing_table():
+test try_to_create_existing_table():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -470,8 +467,7 @@ func test_try_to_create_existing_table():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_prepare_bad_statement():
+test prepare_bad_statement():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -486,8 +482,7 @@ func test_prepare_bad_statement():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_bad_column():
+test bad_column():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -542,8 +537,7 @@ func test_bad_column():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_column_value_string():
+test column_value_string():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -560,8 +554,7 @@ func test_column_value_string():
     assert statement.column_value_string(3) == "1.000000"
     assert statement.column_value_string(4) == "b\"\\x01#E\""
 
-@test
-func test_statement():
+test statement():
     Path("the.db").rm(force=True)
 
     database = Database(Path("the.db"))
@@ -612,8 +605,7 @@ func test_statement():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_two_database_connections():
+test two_database_connections():
     Path("the.db").rm(force=True)
 
     database_1 = Database(Path("the.db"))
@@ -638,8 +630,7 @@ func test_two_database_connections():
 
     Path("the.db").rm(force=True)
 
-@test
-func test_string():
+test string():
     path = Path("the.db")
     path.rm(force=True)
     database = Database(path)
