@@ -79,7 +79,7 @@ class Database:
         return Statement(sql, self)
 
 func _create_error_message(database: Database) -> string:
-    message: string = None
+    message: string? = None
 
     c"message = String(sqlite3_errmsg(database->database_p));"
 
@@ -287,7 +287,7 @@ class Statement:
         if column >= self._number_of_columns:
             raise SqlError(f"bad column {column}")
 
-        value = b""
+        value: bytes? = b""
 
         c"""
         const unsigned char *value_p = sqlite3_column_text(this->stmt_p, column);
@@ -302,7 +302,7 @@ class Statement:
         """
 
         if value is None:
-            return None
+            raise SqlError("bad column value")
 
         return string(value)
 
@@ -314,7 +314,7 @@ class Statement:
         if column >= self._number_of_columns:
             raise SqlError(f"bad column {column}")
 
-        value: bytes = None
+        value: bytes? = None
 
         c"""
         value = Bytes(sqlite3_column_bytes(this->stmt_p, column));
@@ -454,7 +454,7 @@ test try_to_create_existing_table():
     database = Database(Path("the.db"))
 
     database.execute("CREATE TABLE tab(foo, bar, baz)")
-    message: string = None
+    message: string? = None
 
     try:
         database.execute("CREATE TABLE tab(foo, bar, baz)")
