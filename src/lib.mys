@@ -279,7 +279,7 @@ class Statement:
 
         return value
 
-    func column_string(self, column: u32) -> string:
+    func column_string(self, column: u32) -> string?:
         """Get the value of given column as a string.
 
         """
@@ -302,7 +302,7 @@ class Statement:
         """
 
         if value is None:
-            raise SqlError("bad column value")
+            return None
 
         return string(value)
 
